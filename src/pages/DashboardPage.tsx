@@ -1,6 +1,10 @@
 import Button from "@/components/ui/button";
+import {useItems} from "@/api/api.ts";
 
 export default function DashboardPage() {
+
+  const {data: items = []} = useItems()
+
   return (
     <section className="space-y-6">
       <header className="space-y-1">
@@ -14,6 +18,8 @@ export default function DashboardPage() {
           <Button variant="default">Explore</Button>
         </div>
       </div>
+
+      <pre>{JSON.stringify(items)}</pre>
     </section>
   );
 }
