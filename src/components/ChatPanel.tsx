@@ -69,7 +69,7 @@ export function ChatPanel() {
       <CardHeader>
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow">{/* normalized from gradient */}
               <Bot className="h-6 w-6" />
             </div>
             <div>
@@ -113,7 +113,7 @@ export function ChatPanel() {
                     <div
                       className={`relative inline-block rounded-3xl px-6 py-3 leading-relaxed transition-all ${
                         m.from === "user"
-                          ? "bg-gradient-to-r from-primary to-purple-600 text-primary-foreground shadow-xl"
+                          ? "bg-primary text-primary-foreground shadow-xl" // normalized no gradient
                           : "bg-muted text-foreground shadow"
                       }`}
                       style={{ wordBreak: "break-word" }}
@@ -130,7 +130,7 @@ export function ChatPanel() {
 
                   {m.from === "user" && (
                     <div className="flex-none">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow">{/* normalized from gradient */}
                         <span className="text-sm font-semibold">{userName?.[0]?.toUpperCase() ?? "U"}</span>
                       </div>
                     </div>

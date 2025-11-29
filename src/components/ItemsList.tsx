@@ -4,7 +4,6 @@ import Button from "@/components/ui/button";
 import { Wrench, Shield } from "lucide-react";
 import { useItems } from "@/api/api";
 
-// Тип одного предмета
 export interface Item {
   id: string;
   name: string;
@@ -12,8 +11,6 @@ export interface Item {
   risk_level: "low" | "medium" | "high";
   status: "available" | "borrowed" | "unavailable";
 }
-
-// --- helpers ---
 
 function getStatusLabel(status: Item["status"]) {
   switch (status) {
@@ -27,22 +24,18 @@ function getStatusLabel(status: Item["status"]) {
       return status;
   }
 }
-
-function getStatusBadgeClasses(status: Item["status"]) {
-  const base =
-    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium";
+function getStatusVariant(status: Item["status"]) {
   switch (status) {
     case "available":
-      return `${base} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30`;
+      return "default";
     case "borrowed":
-      return `${base} bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30`;
+      return "secondary";
     case "unavailable":
-      return `${base} bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/30`;
+      return "outline";
     default:
-      return base;
+      return "default";
   }
 }
-
 function getRiskLabel(risk: Item["risk_level"]) {
   switch (risk) {
     case "low":
@@ -55,98 +48,64 @@ function getRiskLabel(risk: Item["risk_level"]) {
       return risk;
   }
 }
-
-function getRiskBadgeClasses(risk: Item["risk_level"]) {
-  const base =
-    "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-tight";
+function getRiskVariant(risk: Item["risk_level"]) {
   switch (risk) {
     case "low":
-      return `${base} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30`;
+      return "secondary";
     case "medium":
-      return `${base} bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30`;
+      return "default";
     case "high":
-      return `${base} bg-red-500/10 text-red-600 dark:text-red-500 border-red-500/30`;
+      return "destructive";
     default:
-      return base;
+      return "secondary";
   }
 }
-
 function capitalize(str: string) {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// --- карточка одного айтема ---
-
 function ItemCardInline({ item }: { item: Item }) {
   const ownerName = capitalize(item.owner_id);
-
   return (
     <Card className="relative w-full max-w-xs overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-colors">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-3">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <Wrench className="size-5" aria-hidden="true" />
           </div>
           <div className="flex flex-col">
-            <CardTitle className="text-sm font-semibold leading-tight tracking-tight">
-              {item.name}
-            </CardTitle>
+            <CardTitle className="text-sm font-semibold leading-tight tracking-tight">{item.name}</CardTitle>
             <CardDescription className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
               Owner: <span className="font-medium text-foreground/80">{ownerName}</span>
             </CardDescription>
           </div>
         </div>
-        <Badge className={getStatusBadgeClasses(item.status)}>
-          {getStatusLabel(item.status)}
-        </Badge>
+        <Badge variant={getStatusVariant(item.status)}>{getStatusLabel(item.status)}</Badge>
       </CardHeader>
-
       <CardContent className="p-4 pt-0">
         <div className="mb-3 flex items-center gap-2 text-[11px]">
           <Shield className="size-3.5 text-muted-foreground" aria-hidden="true" />
           <span className="text-muted-foreground">Risk:</span>
-          <span className={getRiskBadgeClasses(item.risk_level)}>
-            {getRiskLabel(item.risk_level)}
-          </span>
+          <Badge variant={getRiskVariant(item.risk_level)} className="text-[10px] px-2 py-0.5">{getRiskLabel(item.risk_level)}</Badge>
         </div>
         <div className="flex gap-2 pt-1">
-          <Button
-            type="button"
-            size="sm"
-            className="h-7 px-2.5 text-[11px] font-medium"
-          >
-            Request
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            className="h-7 px-2.5 text-[11px] font-medium"
-            variant="ghost"
-          >
-            Details
-          </Button>
+          <Button type="button" size="sm" className="h-7 px-2.5 text-[11px] font-medium">Request</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2.5 text-[11px] font-medium">Details</Button>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-// --- список айтемов ---
-
 export interface ItemsListProps {
   title?: string;
-  items?: Item[]; // если передано, переопределяет данные из API
+  items?: Item[];
 }
 
 export function ItemsList({ title = "Available items", items: overrideItems }: ItemsListProps) {
   const { data: items = [] } = useItems();
-
-  // items может быть либо Item[], либо { items: Item[] }
-  const apiItems: Item[] = Array.isArray(items)
-    ? (items as Item[])
-    : (((items as any)?.items ?? []) as Item[]);
-
+  const apiItems: Item[] = Array.isArray(items) ? (items as Item[]) : (((items as any)?.items ?? []) as Item[]);
   const effectiveItems: Item[] = overrideItems ?? apiItems;
 
   if (effectiveItems.length === 0) {
@@ -154,9 +113,7 @@ export function ItemsList({ title = "Available items", items: overrideItems }: I
       <section className="w-full space-y-3">
         <header className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="text-sm text-muted-foreground">
-            No items available yet. Be the first to share something with your neighbors.
-          </p>
+          <p className="text-sm text-muted-foreground">No items available yet. Be the first to share something with your neighbors.</p>
         </header>
       </section>
     );
@@ -167,19 +124,12 @@ export function ItemsList({ title = "Available items", items: overrideItems }: I
       <header className="flex items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="text-sm text-muted-foreground">
-            Items you can borrow from your neighbors right now.
-          </p>
+          <p className="text-sm text-muted-foreground">Items you can borrow from your neighbors right now.</p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {effectiveItems.length} items
-        </p>
+        <p className="text-xs text-muted-foreground">{effectiveItems.length} items</p>
       </header>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {effectiveItems.map((item) => (
-          <ItemCardInline key={item.id} item={item} />
-        ))}
+        {effectiveItems.map(item => <ItemCardInline key={item.id} item={item} />)}
       </div>
     </section>
   );

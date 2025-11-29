@@ -29,13 +29,11 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
   }, [theme, setTheme]);
 
   return (
-    // Make bar more transparent overall
     <header className="fixed inset-x-0 top-0 z-40 border-b border-border/40 bg-background/50 backdrop-blur-md shadow-sm">
       <div className="relative mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-4">
-        {/* Logo / App name (left) */}
+        {/* Logo / App name */}
         <div className="flex items-center gap-3">
-          {/* Round app icon */}
-          <div className="flex size-14 sm:size-14 items-center justify-center rounded-full bg-black/90 text-white flex-none backdrop-blur-xs">
+          <div className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground flex-none shadow-sm">
             <Share2 className="h-7 w-7" aria-hidden="true" />
           </div>
           <div className="flex flex-col leading-tight">
@@ -56,13 +54,11 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
               <Button
                 key={key}
                 type="button"
-                variant={"ghost"}
+                variant={isActive ? "default" : "ghost"}
                 size="sm"
                 className={cn(
-                  "h-8 sm:h-9 rounded-lg px-1 sm:px-5 transition-all duration-200 ease-out active:!bg-black active:!text-white focus-visible:ring-0 focus-visible:border-transparent focus-visible:outline-none",
-                  isActive
-                    ? "!bg-black/90 !text-white"
-                    : "text-muted-foreground hover:text-foreground hover:bg-black/10"
+                  "h-8 sm:h-9 px-2 sm:px-5 transition-colors",
+                  isActive && "shadow-sm"
                 )}
                 onClick={() => onChange(key)}
               >
@@ -74,18 +70,16 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
 
         {/* Right actions */}
         <div className="flex items-center gap-3 sm:gap-4">
-          {/* Theme toggle */}
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="rounded-full bg-background/40 backdrop-blur-sm border-border/50 hover:bg-background/60"
+            className="rounded-full bg-background/40 backdrop-blur-sm border-border/50 hover:bg-accent hover:text-accent-foreground"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >
             <span className="inline-flex items-center justify-center">
               {theme === "light" ? (
-                // Sun icon
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -107,7 +101,6 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
                   <path d="M17.5 6.5L19 5" />
                 </svg>
               ) : (
-                // Moon icon
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -126,9 +119,10 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                {/* Avatar circle with initial */}
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-gray-600 text-white font-medium shadow-sm">
-                  <span className="text-sm leading-none">{user?.[0]?.toUpperCase()}</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground font-medium shadow-sm">
+                  <span className="text-sm leading-none">
+                    {user?.[0]?.toUpperCase()}
+                  </span>
                 </div>
                 <span className="text-sm font-medium">{user}</span>
               </div>
@@ -144,9 +138,14 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
               </Button>
             </div>
           ) : (
-            <Button size="sm" variant="default" onClick={() => navigate("/login")}>Sign in</Button>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => navigate("/login")}
+            >
+              Sign in
+            </Button>
           )}
-
         </div>
       </div>
     </header>

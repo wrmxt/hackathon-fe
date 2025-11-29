@@ -1,13 +1,6 @@
 import { Wrench, Shield, Info } from "lucide-react";
-
-import  Button  from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import Button from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const exampleItem = {
@@ -37,47 +30,28 @@ function getStatusLabel(status: (typeof exampleItem)["status"]) {
       return status;
   }
 }
-
-function getStatusBadgeClasses(status: (typeof exampleItem)["status"]) {
-  const base =
-    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium";
+function getStatusVariant(status: (typeof exampleItem)["status"]) {
   switch (status) {
-    case "available":
-      return `${base} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/40`;
-    case "borrowed":
-      return `${base} bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40`;
-    case "unavailable":
-      return `${base} bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/40`;
-    default:
-      return base;
+    case "available": return "default"; // primary token
+    case "borrowed": return "secondary"; // secondary token
+    case "unavailable": return "outline"; // neutral outline
+    default: return "default";
   }
 }
-
 function getRiskLabel(risk: (typeof exampleItem)["risk_level"]) {
   switch (risk) {
-    case "low":
-      return "Low";
-    case "medium":
-      return "Medium";
-    case "high":
-      return "High";
-    default:
-      return risk;
+    case "low": return "Low";
+    case "medium": return "Medium";
+    case "high": return "High";
+    default: return risk;
   }
 }
-
-function getRiskBadgeClasses(risk: (typeof exampleItem)["risk_level"]) {
-  const base =
-    "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium";
+function getRiskVariant(risk: (typeof exampleItem)["risk_level"]) {
   switch (risk) {
-    case "low":
-      return `${base} bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 border-emerald-500/30`;
-    case "medium":
-      return `${base} bg-amber-500/8 text-amber-600 dark:text-amber-400 border-amber-500/30`;
-    case "high":
-      return `${base} bg-red-500/8 text-red-600 dark:text-red-500 border-red-500/30`;
-    default:
-      return base;
+    case "low": return "secondary";
+    case "medium": return "default";
+    case "high": return "destructive";
+    default: return "secondary";
   }
 }
 
@@ -108,9 +82,7 @@ export default function ItemCard() {
         </div>
 
         <div className="flex flex-col items-end gap-1">
-          <Badge className={getStatusBadgeClasses(exampleItem.status)}>
-            {getStatusLabel(exampleItem.status)}
-          </Badge>
+          <Badge variant={getStatusVariant(exampleItem.status)}>{getStatusLabel(exampleItem.status)}</Badge>
           <button
             type="button"
             className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
@@ -133,9 +105,7 @@ export default function ItemCard() {
               />
               <span className="text-muted-foreground">Risk:</span>
             </div>
-            <span className={getRiskBadgeClasses(exampleItem.risk_level)}>
-              {getRiskLabel(exampleItem.risk_level)} risk
-            </span>
+            <Badge variant={getRiskVariant(exampleItem.risk_level)} className="text-[10px] px-2 py-0.5">{getRiskLabel(exampleItem.risk_level)} risk</Badge>
           </div>
         </div>
 
