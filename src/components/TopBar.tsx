@@ -25,12 +25,13 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
   }, [theme, setTheme]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur shadow-sm">
+    // Make bar more transparent overall
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-border/40 bg-background/50 backdrop-blur-md shadow-sm">
       <div className="relative mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-4">
         {/* Logo / App name (left) */}
         <div className="flex items-center gap-3">
-          {/* Round app icon using lucide-react (white on black, no border) */}
-          <div className="flex size-14 sm:size-14 items-center justify-center rounded-full bg-black text-white flex-none">
+          {/* Round app icon */}
+          <div className="flex size-14 sm:size-14 items-center justify-center rounded-full bg-black/90 text-white flex-none backdrop-blur-xs">
             <Share2 className="h-7 w-7" aria-hidden="true" />
           </div>
           <div className="flex flex-col leading-tight">
@@ -44,7 +45,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
         </div>
 
         {/* Center nav */}
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-md bg-background p-1 text-xs sm:text-sm">
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-md bg-background/40 backdrop-blur-sm p-1 text-xs sm:text-sm shadow-xs">
           {navItems.map(({ key, label }) => {
             const isActive = key === activeItem;
             return (
@@ -54,10 +55,10 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
                 variant={"ghost"}
                 size="sm"
                 className={cn(
-                  "h-8 sm:h-9 rounded-lg px-1 sm:px-5 transition-all duration-200 ease-out active:!bg-black active:!text-white",
+                  "h-8 sm:h-9 rounded-lg px-1 sm:px-5 transition-all duration-200 ease-out active:!bg-black active:!text-white focus-visible:ring-0 focus-visible:border-transparent focus-visible:outline-none",
                   isActive
-                    ? "!bg-black !text-white"
-                    : "bg-background text-muted-foreground hover:text-foreground"
+                    ? "!bg-black/90 !text-white"
+                    : "text-muted-foreground hover:text-foreground hover:bg-black/10"
                 )}
                 onClick={() => onChange(key)}
               >
@@ -74,7 +75,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
             type="button"
             variant="outline"
             size="icon"
-            className="rounded-full"
+            className="rounded-full bg-background/40 backdrop-blur-sm border-border/50 hover:bg-background/60"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >

@@ -19,11 +19,13 @@ export function AppLayout() {
     else if (item === "about") navigate("/about");
   };
 
+  const isAbout = location.pathname === "/about";
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
         <TopBar activeItem={activeItem} onChange={handleChange} />
-        <main className="mx-auto max-w-6xl px-4 pt-6 pb-10">
+        <main className={isAbout ? "pt-0 pb-10" : "mx-auto max-w-6xl px-4 pt-6 pb-10"}>
           <Outlet />
         </main>
       </div>
