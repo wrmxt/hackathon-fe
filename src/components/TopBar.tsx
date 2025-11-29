@@ -3,6 +3,8 @@ import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme";
 import { Share2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export type NavItem = "chat" | "dashboard" | "about";
 
@@ -19,6 +21,8 @@ const navItems: { key: NavItem; label: string }[] = [
 
 export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleTheme = React.useCallback(() => {
     setTheme(theme === "light" ? "dark" : "light");
@@ -70,6 +74,29 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
 
         {/* Right actions */}
         <div className="flex items-center gap-3 sm:gap-4">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {/* Avatar circle with initial */}
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-purple-600 text-white font-medium shadow-sm">
+                  <span className="text-sm leading-none">{user?.[0]?.toUpperCase()}</span>
+                </div>
+                <span className="text-sm font-medium">{user}</span>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  logout();
+                  navigate("/login");
+                }}
+              >
+                Logout
+              </Button>
+            </div>
+          ) : (
+            <Button size="sm" variant="default" onClick={() => navigate("/login")}>Sign in</Button>
+          )}
           {/* Theme toggle */}
           <Button
             type="button"
