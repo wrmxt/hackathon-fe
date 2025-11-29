@@ -161,7 +161,7 @@ export default function AboutPage() {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <Button variant="default" className="bg-white text-black hover:bg-white/90 shadow">Meet the team</Button>
-            <Button variant="outline" className="border-white/40 text-white hover:bg-white/15">Our mission</Button>
+            <Button variant="outline" className="border-white/40 text-white bg-transparent hover:bg-transparent focus-visible:ring-white/40">Our mission</Button>
           </div>
         </div>
       </section>
