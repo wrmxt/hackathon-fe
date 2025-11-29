@@ -5,6 +5,7 @@ import { useTheme } from "@/lib/theme";
 import { Share2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { DrawerTrigger } from "@/components/ui/drawer";
 
 export type NavItem = "chat" | "dashboard" | "about";
 
@@ -147,6 +148,23 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
             </Button>
           )}
         </div>
+      </div>
+      {/* Sidebar toggle */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2">
+        <DrawerTrigger>
+          <Button size="icon" variant="secondary" aria-label="Toggle sidebar">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+          </Button>
+        </DrawerTrigger>
       </div>
     </header>
   );

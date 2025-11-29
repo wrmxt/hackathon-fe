@@ -6,6 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import DashboardPage from "@/pages/DashboardPage";
 import ChatPage from "@/pages/ChatPage";
 import AboutPage from "@/pages/AboutPage";
+import InboxPage from "@/pages/InboxPage";
 import { AuthProvider } from "@/context/AuthContext";
 import LoginPage from "@/pages/LoginPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -24,6 +25,7 @@ createRoot(document.getElementById("root")!).render(
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="chat" element={<ChatPage />} />
+              <Route path="inbox" element={<InboxPage />} />
             </Route>
 
             <Route path="about" element={<AboutPage />} />
