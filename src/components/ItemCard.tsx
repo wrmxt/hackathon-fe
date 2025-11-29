@@ -8,7 +8,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import ItemDetailsDialog from "@/components/ItemDetailsDialog"; // поправь путь при необходимости
+import ItemDetailsDialog from "@/components/ItemDetailsDialog";
+import {RequestItemDialog} from "@/components/RequestItemDialog"; // новый диалог
 
 // Тип айтема в стиле бэкенда
 export interface Item {
@@ -59,6 +60,7 @@ export interface ItemCardProps {
 
 export default function ItemCard({ item }: ItemCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
 
   const ownerName = capitalize(item.owner_id);
   const hasTags = Array.isArray(item.tags) && item.tags.length > 0;
@@ -76,12 +78,10 @@ export default function ItemCard({ item }: ItemCardProps) {
             </div>
 
             <div className="flex flex-col">
-              {/* Название теперь слева и центрится по иконке за счёт items-center у родителя */}
               <CardTitle className="text-sm font-semibold leading-tight">
                 {item.name}
               </CardTitle>
 
-              {/* Более выразительный owner */}
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Shared by{" "}
                 <span className="font-semibold text-foreground">
@@ -89,7 +89,6 @@ export default function ItemCard({ item }: ItemCardProps) {
                 </span>
               </p>
 
-              {/* Detail of item опушен ниже */}
               <button
                 type="button"
                 onClick={() => setDetailsOpen(true)}
@@ -112,7 +111,6 @@ export default function ItemCard({ item }: ItemCardProps) {
 
         {/* CONTENT */}
         <CardContent className="flex flex-1 flex-col px-4 pb-3 pt-1">
-          {/* Теги под хедером */}
           {hasTags && (
             <div className="mt-1 flex flex-wrap gap-1.5">
               {item.tags!.map((tag) => (
@@ -133,6 +131,7 @@ export default function ItemCard({ item }: ItemCardProps) {
               type="button"
               size="sm"
               className="h-8 flex-1 rounded-full text-[11px] font-medium"
+              onClick={() => setRequestOpen(true)}
             >
               Request item
             </Button>
@@ -148,11 +147,18 @@ export default function ItemCard({ item }: ItemCardProps) {
         </CardContent>
       </Card>
 
-      {/* Модалка с деталями — уже существующий компонент */}
+      {/* Модалка с деталями */}
       <ItemDetailsDialog
         item={item}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
+      />
+
+      {/* Модалка для запроса айтема */}
+      <RequestItemDialog
+        item={item}
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
       />
     </>
   );
