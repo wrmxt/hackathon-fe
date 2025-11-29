@@ -1,0 +1,182 @@
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Button from "@/components/ui/button";
+import { Wrench, Shield } from "lucide-react";
+import { useItems } from "@/api/api";
+
+// Тип одного предмета
+export interface Item {
+  id: string;
+  name: string;
+  owner_id: string;
+  risk_level: "low" | "medium" | "high";
+  status: "available" | "borrowed" | "unavailable";
+}
+
+// --- helpers ---
+
+function getStatusLabel(status: Item["status"]) {
+  switch (status) {
+    case "available":
+      return "Available";
+    case "borrowed":
+      return "Borrowed";
+    case "unavailable":
+      return "Unavailable";
+    default:
+      return status;
+  }
+}
+
+function getStatusBadgeClasses(status: Item["status"]) {
+  const base =
+    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium";
+  switch (status) {
+    case "available":
+      return `${base} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30`;
+    case "borrowed":
+      return `${base} bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30`;
+    case "unavailable":
+      return `${base} bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/30`;
+    default:
+      return base;
+  }
+}
+
+function getRiskLabel(risk: Item["risk_level"]) {
+  switch (risk) {
+    case "low":
+      return "Low";
+    case "medium":
+      return "Medium";
+    case "high":
+      return "High";
+    default:
+      return risk;
+  }
+}
+
+function getRiskBadgeClasses(risk: Item["risk_level"]) {
+  const base =
+    "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-tight";
+  switch (risk) {
+    case "low":
+      return `${base} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30`;
+    case "medium":
+      return `${base} bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30`;
+    case "high":
+      return `${base} bg-red-500/10 text-red-600 dark:text-red-500 border-red-500/30`;
+    default:
+      return base;
+  }
+}
+
+function capitalize(str: string) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// --- карточка одного айтема ---
+
+function ItemCardInline({ item }: { item: Item }) {
+  const ownerName = capitalize(item.owner_id);
+
+  return (
+    <Card className="relative w-full max-w-xs overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-colors">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Wrench className="size-5" aria-hidden="true" />
+          </div>
+          <div className="flex flex-col">
+            <CardTitle className="text-sm font-semibold leading-tight tracking-tight">
+              {item.name}
+            </CardTitle>
+            <CardDescription className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+              Owner: <span className="font-medium text-foreground/80">{ownerName}</span>
+            </CardDescription>
+          </div>
+        </div>
+        <Badge className={getStatusBadgeClasses(item.status)}>
+          {getStatusLabel(item.status)}
+        </Badge>
+      </CardHeader>
+
+      <CardContent className="p-4 pt-0">
+        <div className="mb-3 flex items-center gap-2 text-[11px]">
+          <Shield className="size-3.5 text-muted-foreground" aria-hidden="true" />
+          <span className="text-muted-foreground">Risk:</span>
+          <span className={getRiskBadgeClasses(item.risk_level)}>
+            {getRiskLabel(item.risk_level)}
+          </span>
+        </div>
+        <div className="flex gap-2 pt-1">
+          <Button
+            type="button"
+            size="sm"
+            className="h-7 px-2.5 text-[11px] font-medium"
+          >
+            Request
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            className="h-7 px-2.5 text-[11px] font-medium"
+            variant="ghost"
+          >
+            Details
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// --- список айтемов ---
+
+export interface ItemsListProps {
+  title?: string;
+  items?: Item[]; // если передано, переопределяет данные из API
+}
+
+export function ItemsList({ title = "Available items", items: overrideItems }: ItemsListProps) {
+  // РОВНО так, как ты написал:
+  const { data: items = [] } = useItems();
+
+  // items может быть либо Item[], либо { items: Item[] }
+  const apiItems: Item[] = Array.isArray(items)
+    ? (items as Item[])
+    : (((items as any)?.items ?? []) as Item[]);
+
+  const effectiveItems: Item[] = overrideItems ?? apiItems;
+
+  if (effectiveItems.length === 0) {
+    return (
+      <section className="w-full">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-base font-semibold">{title}</h2>
+        </div>
+        <div className="rounded-xl border bg-muted/40 px-4 py-6 text-sm text-muted-foreground">
+          No items available yet. Be the first to share something with your neighbors.
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="w-full">
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          {effectiveItems.length} items
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {effectiveItems.map((item) => (
+          <ItemCardInline key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default ItemsList;
