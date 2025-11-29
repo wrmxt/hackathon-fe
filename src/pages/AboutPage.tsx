@@ -144,8 +144,8 @@ export default function AboutPage() {
           alt="Neighbors sharing and reducing waste together"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        {/* Оверлей: темнее в светлой теме, мягче в тёмной */}
-        <div className="absolute inset-0 bg-black/60 dark:bg-black/35" />
+        {/* Overlay updated: светлая тема делает картинку светлее, тёмная — темнее */}
+        <div className="absolute inset-0 bg-white/30 dark:bg-black/65 transition-colors duration-300" />
 
         <div className="relative z-10 flex h-full flex-col justify-center px-6 pt-24 pb-16 text-white sm:px-10">
           <span className="inline-flex w-fit items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/80 ring-1 ring-white/20">
