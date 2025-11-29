@@ -23,3 +23,12 @@ export function useItems() {
   })
 }
 
+
+export function useChat(user: string, message: string) {
+
+  return useQuery({
+    queryKey: ["ChatResponse", user, message],
+    queryFn : () =>
+      HTTP_CLIENT.post("/api/chat", {user_id: user, message: message}) as Promise<{user_id: string; reply: string; confident: number;}>
+  })
+}
