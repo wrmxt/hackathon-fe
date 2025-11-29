@@ -1,4 +1,5 @@
 import ItemsList from "@/components/ItemsList.tsx";
+import BuildingOverview from "@/components/BuildingOverview.tsx";
 
 
 export default function DashboardPage() {
@@ -7,8 +8,11 @@ export default function DashboardPage() {
   return (
     <section className="mt-2">
 
-      <h1 className="text-3xl font-semibold mt-10 text-center ">Available items</h1>
-      <ItemsList/>
+      <div className="mt-10 ">
+        <BuildingOverview />
+        <ItemsList />
+      </div>
+
       {/*<pre>{JSON.stringify(items)}</pre>*/}
     </section>
   );

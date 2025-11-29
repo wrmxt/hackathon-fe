@@ -140,7 +140,6 @@ export interface ItemsListProps {
 }
 
 export function ItemsList({ title = "Available items", items: overrideItems }: ItemsListProps) {
-  // РОВНО так, как ты написал:
   const { data: items = [] } = useItems();
 
   // items может быть либо Item[], либо { items: Item[] }
@@ -152,24 +151,31 @@ export function ItemsList({ title = "Available items", items: overrideItems }: I
 
   if (effectiveItems.length === 0) {
     return (
-      <section className="w-full">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold">{title}</h2>
-        </div>
-        <div className="rounded-xl border bg-muted/40 px-4 py-6 text-sm text-muted-foreground">
-          No items available yet. Be the first to share something with your neighbors.
-        </div>
+      <section className="w-full space-y-3">
+        <header className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+          <p className="text-sm text-muted-foreground">
+            No items available yet. Be the first to share something with your neighbors.
+          </p>
+        </header>
       </section>
     );
   }
 
   return (
-    <section className="w-full">
-      <div className="mb-4 flex items-center justify-between">
+    <section className="w-full space-y-4">
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+          <p className="text-sm text-muted-foreground">
+            Items you can borrow from your neighbors right now.
+          </p>
+        </div>
         <p className="text-xs text-muted-foreground">
           {effectiveItems.length} items
         </p>
-      </div>
+      </header>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {effectiveItems.map((item) => (
           <ItemCardInline key={item.id} item={item} />
