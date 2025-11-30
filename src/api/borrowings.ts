@@ -39,6 +39,6 @@ export function useConfirm(user: string, borrowing_id: string) {
   return useQuery({
     queryKey: ["ChatResponse", user, borrowing_id],
     queryFn : () =>
-      HTTP_CLIENT.post("/api/borrowing/confirm", {borrowing_id: borrowing_id, owner_id: user})
+      HTTP_CLIENT.post("/api/borrowings/confirm", {borrowing_id: borrowing_id, owner_id: user})
   })
 }
