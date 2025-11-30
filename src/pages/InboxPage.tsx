@@ -1,16 +1,16 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
-import { usePending, useConfirm } from "@/api/borrowings";
+import { usePending, useConfirm, useBorrowings } from "@/api/borrowings";
+import { useConfirmReturn } from "@/api/returnBorrowing";
 import { useItems } from "@/api/api";
 import { useQueryClient } from "@tanstack/react-query";
 import Button from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Check, X } from "lucide-react";
 
-import InboxBorrowingCard, {
-  type Borrowing,
-  type Item,
-} from "@/components/InboxBorrowingCard";
+import InboxBorrowingCard, { type Borrowing } from "@/components/InboxBorrowingCard";
+import ReturnRequestCard from "@/components/ReturnRequestCard";
+import type { Item } from "@/components/ItemCard";
 
 // augment Window for AudioContext
 declare global {
@@ -65,6 +65,43 @@ function ConfirmWorker({
   );
 }
 
+function ConfirmReturnWorker({
+                               ownerId,
+                               borrowingId,
+                               onDone,
+                             }: {
+  ownerId: string;
+  borrowingId: string;
+  onDone: (ok: boolean, msg?: string) => void;
+}) {
+  const q = useConfirmReturn(borrowingId, ownerId);
+
+  React.useEffect(() => {
+    if (q.isSuccess) onDone(true, "Return confirmed");
+    else if (q.isError) onDone(false, "Failed to confirm return");
+  }, [q.isSuccess, q.isError, onDone]);
+
+  return (
+    <Button
+      size="sm"
+      variant="default"
+      disabled
+      className="inline-flex items-center gap-2"
+    >
+      {q.isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : q.isError ? (
+        <X className="h-4 w-4 text-destructive" />
+      ) : (
+        <Check className="h-4 w-4 text-green-500" />
+      )}
+      <span>
+        {q.isLoading ? "Confirming..." : q.isError ? "Error" : "Processing"}
+      </span>
+    </Button>
+  );
+}
+
 export default function InboxPage() {
   const { user } = useAuth();
   const userId = user ?? "";
@@ -85,10 +122,17 @@ export default function InboxPage() {
     }
   }
 
+  const borrowingsQ = useBorrowings(userId);
+  const borrowingsData = borrowingsQ.data as { lent?: Borrowing[]; borrowed?: Borrowing[] } | undefined;
+  const lentList = borrowingsData?.lent ?? [];
+  const returnRequestedList = lentList.filter(b => (b.status || '').toLowerCase() === 'return_requested');
+
   const [confirmingId, setConfirmingId] = React.useState<string | null>(null);
   const [confirmedIds, setConfirmedIds] = React.useState<Record<string, boolean>>(
     {},
   );
+  const [returnConfirmingId, setReturnConfirmingId] = React.useState<string | null>(null);
+  const [returnConfirmedIds, setReturnConfirmedIds] = React.useState<Record<string, boolean>>({});
   const [toast, setToast] = React.useState<{
     type: "success" | "error";
     message: string;
@@ -152,6 +196,35 @@ export default function InboxPage() {
     }
   };
 
+  const handleReturnConfirmDone = async (
+    borrowingId: string,
+    ok: boolean,
+    msg?: string,
+  ) => {
+    setReturnConfirmingId(null);
+    if (ok) {
+      setReturnConfirmedIds(s => ({ ...s, [borrowingId]: true }));
+      await qc.invalidateQueries({ queryKey: ["Borrowings", userId] });
+      await qc.invalidateQueries({ queryKey: ["LatestDataEntry"] });
+      await qc.invalidateQueries({ queryKey: ["BorrowingsPending", userId] });
+      setToast({ type: "success", message: msg || "Return confirmed" });
+      playSuccessSound();
+      setTimeout(() => setToast(null), 3000);
+      setTimeout(
+        () =>
+          setReturnConfirmedIds(s => {
+            const copy = { ...s };
+            delete copy[borrowingId];
+            return copy;
+          }),
+        3000,
+      );
+    } else {
+      setToast({ type: "error", message: msg || "Failed to confirm return" });
+      setTimeout(() => setToast(null), 4000);
+    }
+  };
+
   const asLender = pending?.as_lender ?? [];
 
   return (
@@ -195,7 +268,7 @@ export default function InboxPage() {
           <div className="rounded-lg border bg-card p-6 text-center text-sm text-destructive">
             Error loading pending items
           </div>
-        ) : asLender.length === 0 ? (
+        ) : asLender.length === 0 && returnRequestedList.length === 0 ? (
           <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
             No pending confirmations.
           </div>
@@ -241,6 +314,34 @@ export default function InboxPage() {
                   key={b.id}
                   borrowing={b}
                   item={item}
+                  actionNode={actionNode}
+                />
+              );
+            })}
+            {returnRequestedList.map(b => {
+              const item = itemsList.find(it => it.id === b.item_id);
+              let actionNode: React.ReactNode;
+              if (returnConfirmedIds[b.id]) {
+                actionNode = <Badge variant="default" className="bg-green-600 text-white px-3 py-1 text-[11px]">Returned</Badge>;
+              } else if (returnConfirmingId === b.id) {
+                actionNode = <ConfirmReturnWorker ownerId={userId} borrowingId={b.id} onDone={(ok, msg) => handleReturnConfirmDone(b.id, ok, msg)} />;
+              } else {
+                actionNode = (
+                  <Button variant="secondary" size="sm" onClick={() => setReturnConfirmingId(b.id)} className="rounded-md px-3 py-1 shadow-sm hover:shadow-md">
+                    Confirm return
+                  </Button>
+                );
+              }
+              return (
+                <ReturnRequestCard
+                  key={b.id}
+                  borrowing={b}
+                  itemName={item?.name}
+                  itemDescription={item?.description}
+                  confirming={returnConfirmingId === b.id}
+                  confirmed={Boolean(returnConfirmedIds[b.id])}
+                  error={false}
+                  onConfirm={() => setReturnConfirmingId(b.id)}
                   actionNode={actionNode}
                 />
               );
