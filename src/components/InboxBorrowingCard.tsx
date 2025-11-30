@@ -11,7 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { Item } from "@/components/ItemCard";
 
-// Что приходит из /api/borrowings
 export interface Borrowing {
   id: string;
   item_id: string;
@@ -19,16 +18,15 @@ export interface Borrowing {
   borrower_id: string;
   start: string;
   due: string;
-  status: string; // например: "waiting_for_confirm", "confirmed"
+  status: string;
 }
 
 export interface BorrowingItemCardProps {
   borrowing: Borrowing;
-  item?: Item;          // описание предмета, подтягиваем через useItems
-  actionNode: ReactNode; // сюда передаём кнопку / ConfirmWorker / badge "Confirmed"
+  item?: Item;
+  actionNode: ReactNode;
 }
 
-// Читаем статус красиво
 function formatBorrowingStatus(raw: string): string {
   if (!raw) return "";
   return raw
@@ -38,8 +36,9 @@ function formatBorrowingStatus(raw: string): string {
     .join(" ");
 }
 
-// Подбираем вариант badge
-function getBorrowingStatusVariant(status: string): "default" | "secondary" | "outline" {
+function getBorrowingStatusVariant(
+  status: string,
+): "default" | "secondary" | "outline" {
   const s = status.toLowerCase();
   if (s.includes("confirm") || s.includes("pending") || s.includes("waiting")) {
     return "secondary";
@@ -47,7 +46,7 @@ function getBorrowingStatusVariant(status: string): "default" | "secondary" | "o
   if (s.includes("rejected") || s.includes("cancel")) {
     return "outline";
   }
-  return "default"; // confirmed / active
+  return "default";
 }
 
 export default function InboxBorrowingCard({
@@ -60,8 +59,8 @@ export default function InboxBorrowingCard({
   const iconAria = `${title} borrowing card`;
 
   return (
-    <Card className="flex h-full w-full max-w-xs flex-col rounded-2xl border border-border bg-card shadow-sm">
-      {/* HEADER — те же отступы и размеры, что у ItemCard */}
+    <Card className="flex h-full w-full flex-col rounded-2xl border border-border bg-card shadow-sm">
+      {/* HEADER */}
       <CardHeader className="flex flex-row items-start justify-between space-y-0 px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -90,34 +89,30 @@ export default function InboxBorrowingCard({
         </Badge>
       </CardHeader>
 
-      {/* CONTENT — паддинги как в ItemCard */}
-      <CardContent className="flex flex-1 flex-col px-4 pb-3 pt-1">
+      {/* CONTENT */}
+      <CardContent className="flex flex-1 flex-col px-4 pb-2 pt-1">
         <p className="text-sm text-muted-foreground">{description}</p>
 
-        {/* Даты и действие закрепляем снизу */}
-        <div className="mt-auto flex items-end justify-between gap-4 pt-3 text-xs text-muted-foreground">
+        <div className="mt-auto pt-3 text-xs text-muted-foreground">
           <div>
-            <div>
-              Start:{" "}
-              <span className="text-foreground">
-                {new Date(borrowing.start).toLocaleString()}
-              </span>
-            </div>
-            <div>
-              Due:{" "}
-              <span className="text-foreground">
-                {new Date(borrowing.due).toLocaleString()}
-              </span>
-            </div>
+            Start:{" "}
+            <span className="text-foreground">
+              {new Date(borrowing.start).toLocaleString()}
+            </span>
           </div>
-
-          <CardFooter className="p-0">
-            <div className="flex items-center gap-2">
-              {actionNode}
-            </div>
-          </CardFooter>
+          <div>
+            Due:{" "}
+            <span className="text-foreground">
+              {new Date(borrowing.due).toLocaleString()}
+            </span>
+          </div>
         </div>
       </CardContent>
+
+      {/* FOOTER */}
+      <CardFooter className="flex items-center justify-end px-4 pb-3 pt-0">
+        {actionNode}
+      </CardFooter>
     </Card>
   );
 }

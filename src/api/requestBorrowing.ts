@@ -1,39 +1,19 @@
-// src/api/borrowings.ts
-import { HTTP_CLIENT } from "@/api/api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { httpClient } from "@/api/client.ts";
+import { useQuery } from "@tanstack/react-query";
 
-// одноразовая функция, если не нужен react-query
-export function requestBorrowing({
-                                   itemId,
-                                   lenderId,
-                                   borrowerId,
-                                   start,
-                                   due,
-                                 }: {
-  itemId: string;
-  lenderId: string;
-  borrowerId: string;
-  start: string;
-  due: string;
-}) {
-  return HTTP_CLIENT.post("/api/borrowings/request", {
-    item_id: itemId,
-    lender_id: lenderId,
-    borrower_id: borrowerId,
-    start,
-    due,
-  });
-}
+const HTTP_CLIENT = httpClient({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeoutMs: 10_000,
+});
 
-export function useRequestBorrowing() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ itemId, lenderId, borrowerId, start, due }: { itemId: string; lenderId: string; borrowerId: string; start: string; due: string; }) =>
-      requestBorrowing({ itemId, lenderId, borrowerId, start, due }),
-    onSuccess: () => {
-      // invalidate related queries so UI updates
-      qc.invalidateQueries({ queryKey: ["Borrowings"] });
-      qc.invalidateQueries({ queryKey: ["LatestDataEntry"] });
-    }
+export function useRequestBorrowing(userId: string, itemId: string) {
+  return useQuery({
+    queryKey: ["RequestBorrowing", userId, itemId],
+    enabled: Boolean(userId && itemId), // чтобы не стрелял без данных
+    queryFn: () =>
+      HTTP_CLIENT.post("/api/borrowings/request", {
+        user_id: userId,
+        item_id: itemId,
+      }) as Promise<{ status: string; borrowing: unknown }>,
   });
 }
