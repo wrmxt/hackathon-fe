@@ -24,12 +24,11 @@ export default function SidebarDrawer({
   const navigate = useNavigate();
   const { user } = useAuth();
   const pendingQuery = usePending(user || "");
-  const pendingData = pendingQuery.data as unknown;
+  const pendingData = pendingQuery.data as { as_lender?: { status?: string }[]; as_borrower?: { status?: string }[] } | undefined;
   const pendingCount = (() => {
     if (!pendingData) return 0;
-    if (Array.isArray(pendingData)) return pendingData.length;
-    const items = (pendingData as any)?.items ?? (pendingData as any)?.data ?? [];
-    return Array.isArray(items) ? items.length : 0;
+    const list = pendingData.as_lender ?? [];
+    return list.filter(b => (b.status || "").toLowerCase().includes("waiting")).length;
   })();
   const sections: Section[] = ["Neighbors", "My Things", "Borrowed", "Lended", "Inbox"];
 
@@ -86,6 +85,9 @@ export default function SidebarDrawer({
 
                 // если захочешь позже:
                 // if (s === "Inbox") navigate("/inbox");
+                if (s === "Inbox") {
+                  navigate("/inbox");
+                }
               }}
             >
               <span className="flex-1 text-left">{s}</span>
