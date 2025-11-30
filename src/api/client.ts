@@ -23,5 +23,11 @@ export function httpClient({baseURL, timeoutMs = 15_000}: { baseURL: string; tim
   return {
     get: <T>(p: string) => request<T>(p),
     post: <T>(p: string, body?: unknown) => request<T>(p, {method: 'POST', body: JSON.stringify(body)}),
+    patch: <T>(p: string, body?: unknown) => request<T>(p, {method: 'PATCH', body: JSON.stringify(body)}),
+    delete: <T>(p: string, options?: { params?: Record<string, string | number | boolean> }) => {
+      const hasParams = options && options.params && Object.keys(options.params).length > 0;
+      const query = hasParams ? '?' + new URLSearchParams(Object.entries(options!.params!).map(([k, v]) => [k, String(v)])).toString() : '';
+      return request<T>(p + query, { method: 'DELETE' });
+    }
   };
 }

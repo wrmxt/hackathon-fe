@@ -7,20 +7,25 @@ import {
 } from "@/components/ui/dialog.tsx";
 import Button from "@/components/ui/button.tsx";
 import type { Item } from "@/components/ItemCard.tsx"; // путь поправь, если другой
+import { useState } from "react";
 
 interface RequestItemDialogProps {
   item: Item;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  alreadyRequested?: boolean;
+  onRequested?: (itemId: string) => void;
 }
 
 export function RequestItemDialog({
-                                    item,
-                                    open,
-                                    onOpenChange,
-                                  }: RequestItemDialogProps) {
-  const ownerName =
-    item.owner_id.charAt(0).toUpperCase() + item.owner_id.slice(1);
+  item,
+  open,
+  onOpenChange,
+  alreadyRequested,
+  onRequested,
+}: RequestItemDialogProps) {
+  const ownerName = item.owner_id.charAt(0).toUpperCase() + item.owner_id.slice(1);
+  const [message, setMessage] = useState("");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,7 +43,7 @@ export function RequestItemDialog({
           className="mt-3 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
-            // сюда потом можно повесить реальный POST на /api/borrowings
+            onRequested?.(item.id);
             onOpenChange(false);
           }}
         >
@@ -49,6 +54,8 @@ export function RequestItemDialog({
             <textarea
               className="h-20 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-primary"
               placeholder="Hi, could I borrow this item tomorrow evening?"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             />
           </div>
 
@@ -62,8 +69,8 @@ export function RequestItemDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="h-8 px-3 text-xs">
-              Send request
+            <Button type="submit" size="sm" className="h-8 px-3 text-xs" disabled={alreadyRequested}>
+              {alreadyRequested ? "Requested" : "Send request"}
             </Button>
           </div>
         </form>

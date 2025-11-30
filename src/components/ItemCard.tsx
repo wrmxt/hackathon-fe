@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import ItemDetailsDialog from "@/components/ItemDetailsDialog";
 import { RequestItemDialog } from "@/components/RequestItemDialog";
-import { ContactInfoDialog } from "@/components/ContactInfoDialog"; // <<< НОВОЕ
+import { ContactInfoDialog } from "@/components/ContactInfoDialog";
 
 // Тип айтема
 export interface Item {
@@ -24,13 +24,11 @@ export interface Item {
   created_at?: string;
 }
 
-// First letter uppercase
 function capitalize(str: string) {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Mapping статуса → метки
 function getStatusLabel(status: Item["status"]) {
   switch (status) {
     case "available":
@@ -44,7 +42,6 @@ function getStatusLabel(status: Item["status"]) {
   }
 }
 
-// STRICT variant mapping
 const STATUS_VARIANTS = {
   available: "default",
   borrowed: "secondary",
@@ -62,7 +59,8 @@ export interface ItemCardProps {
 export default function ItemCard({ item }: ItemCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false); // <<< НОВОЕ
+  const [contactOpen, setContactOpen] = useState(false);
+  const [requested, setRequested] = useState(false); // local state again
 
   const ownerName = capitalize(item.owner_id);
   const hasTags = Array.isArray(item.tags) && item.tags.length > 0;
@@ -84,9 +82,7 @@ export default function ItemCard({ item }: ItemCardProps) {
 
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Shared by{" "}
-                <span className="font-semibold text-foreground">
-                  {ownerName}
-                </span>
+                <span className="font-semibold text-foreground">{ownerName}</span>
               </p>
 
               <button
@@ -100,10 +96,7 @@ export default function ItemCard({ item }: ItemCardProps) {
             </div>
           </div>
 
-          <Badge
-            variant={getStatusVariant(item.status)}
-            className="px-2 py-0 text-[11px]"
-          >
+          <Badge variant={getStatusVariant(item.status)} className="px-2 py-0 text-[11px]">
             {getStatusLabel(item.status)}
           </Badge>
         </CardHeader>
@@ -112,11 +105,7 @@ export default function ItemCard({ item }: ItemCardProps) {
           {hasTags && (
             <div className="mt-1 flex flex-wrap gap-1.5">
               {item.tags!.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="px-2 py-0.5 text-[10px] font-medium"
-                >
+                <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-[10px] font-medium">
                   #{tag}
                 </Badge>
               ))}
@@ -127,14 +116,13 @@ export default function ItemCard({ item }: ItemCardProps) {
             <Button
               type="button"
               size="sm"
-              className="h-8 flex-1 rounded-full text-[11px] font-medium"
+              className="h-8 flex-1 rounded-full text-[11px] font-medium disabled:opacity-60"
               onClick={() => setRequestOpen(true)}
+              disabled={requested || item.status !== "available"}
             >
-              Request item
+              {requested ? "Requested" : "Request item"}
             </Button>
 
-
-            {/* Contact modal */}
             <Button
               type="button"
               size="sm"
@@ -145,29 +133,20 @@ export default function ItemCard({ item }: ItemCardProps) {
               Contact info
             </Button>
 
-            <ContactInfoDialog
-              ownerId={item.owner_id}
-              open={contactOpen}
-              onOpenChange={setContactOpen}
-            />
+            <ContactInfoDialog ownerId={item.owner_id} open={contactOpen} onOpenChange={setContactOpen} />
           </div>
         </CardContent>
       </Card>
 
-      {/* Details modal */}
-      <ItemDetailsDialog
-        item={item}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-      />
+      <ItemDetailsDialog item={item} open={detailsOpen} onOpenChange={setDetailsOpen} />
 
-      {/* Request modal */}
       <RequestItemDialog
         item={item}
         open={requestOpen}
         onOpenChange={setRequestOpen}
+        alreadyRequested={requested}
+        onRequested={() => setRequested(true)}
       />
-
     </>
   );
 }
