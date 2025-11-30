@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Button from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,12 +13,13 @@ import {
 type Section = "Neighbors" | "My Things" | "Borrowed" | "Lended" | "Inbox";
 
 export default function SidebarDrawer({
-  active,
-  onSelect,
-}: {
+                                        active,
+                                        onSelect,
+                                      }: {
   active: Section;
   onSelect: (s: Section) => void;
 }) {
+  const navigate = useNavigate();
   const sections: Section[] = ["Neighbors", "My Things", "Borrowed", "Lended", "Inbox"];
 
   return (
@@ -26,27 +28,49 @@ export default function SidebarDrawer({
         <div className="flex items-center justify-between">
           <div>
             <DrawerTitle>Navigation</DrawerTitle>
-            <DrawerDescription className="text-xs text-muted-foreground">Quick access to your workspace</DrawerDescription>
+            <DrawerDescription className="text-xs text-muted-foreground">
+              Quick access to your workspace
+            </DrawerDescription>
           </div>
           <div className="md:hidden">
             <DrawerClose>
-              <Button size="icon" variant="ghost" aria-label="Close sidebar">✕</Button>
+              <Button size="icon" variant="ghost" aria-label="Close sidebar">
+                ✕
+              </Button>
             </DrawerClose>
           </div>
         </div>
       </DrawerHeader>
 
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-2 px-4 pb-4">
         {sections.map((s) => {
           const isActive = s === active;
+
           return (
             <Button
               key={s}
               variant={isActive ? "secondary" : "ghost"}
               size="default"
-              className="justify-start w-full"
+              className="w-full justify-start"
               onClick={() => {
                 onSelect(s);
+
+                if (s === "My Things") {
+                  navigate("/mythings");
+                }
+
+                if (s === "Neighbors") {
+                  navigate("/neighbors");
+                }
+
+                if (s === "Lended") {
+                  // маршрут: <Route path="landed" element={<LendedPage />} />
+                  navigate("/landed");
+                }
+
+                // если захочешь позже:
+                // if (s === "Borrowed") navigate("/borrowed");
+                // if (s === "Inbox") navigate("/inbox");
               }}
             >
               <span className="flex-1 text-left">{s}</span>
@@ -57,7 +81,9 @@ export default function SidebarDrawer({
       </nav>
 
       <DrawerFooter>
-        <div className="text-xs text-muted-foreground">Filters & quick links</div>
+        <div className="text-xs text-muted-foreground">
+          Filters & quick links
+        </div>
       </DrawerFooter>
     </DrawerContent>
   );

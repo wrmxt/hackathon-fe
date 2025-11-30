@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Wrench, Info } from "lucide-react";
-import Button from "@/components/ui/button";
+
 import {
   Card,
   CardHeader,
@@ -9,20 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ItemDetailsDialog from "@/components/ItemDetailsDialog";
-import { RequestItemDialog } from "@/components/RequestItemDialog";
-import { ContactInfoDialog } from "@/components/ContactInfoDialog"; // <<< НОВОЕ
-
-// Тип айтема
-export interface Item {
-  id: string;
-  name: string;
-  description?: string;
-  tags?: string[];
-  owner_id: string;
-  status: "available" | "borrowed" | "unavailable";
-  risk_level?: "low" | "medium" | "high";
-  created_at?: string;
-}
+import type { Item } from "@/components/ItemCard"; // тип берём из уже существующего компонента
 
 // First letter uppercase
 function capitalize(str: string) {
@@ -30,7 +17,7 @@ function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Mapping статуса → метки
+// те же маппинги статуса, что и в ItemCard
 function getStatusLabel(status: Item["status"]) {
   switch (status) {
     case "available":
@@ -44,25 +31,25 @@ function getStatusLabel(status: Item["status"]) {
   }
 }
 
-// STRICT variant mapping
 const STATUS_VARIANTS = {
   available: "default",
   borrowed: "secondary",
   unavailable: "outline",
-} as const satisfies Record<Item["status"], "default" | "secondary" | "outline">;
+} as const satisfies Record<
+  Item["status"],
+  "default" | "secondary" | "outline"
+>;
 
 function getStatusVariant(status: Item["status"]) {
   return STATUS_VARIANTS[status];
 }
 
-export interface ItemCardProps {
+export interface ItemMyThingProps {
   item: Item;
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
+export default function ItemMyThing({ item }: ItemMyThingProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [requestOpen, setRequestOpen] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false); // <<< НОВОЕ
 
   const ownerName = capitalize(item.owner_id);
   const hasTags = Array.isArray(item.tags) && item.tags.length > 0;
@@ -71,6 +58,7 @@ export default function ItemCard({ item }: ItemCardProps) {
   return (
     <>
       <Card className="flex h-full w-full max-w-xs flex-col rounded-2xl border border-border bg-card shadow-sm">
+        {/* HEADER */}
         <CardHeader className="flex flex-row items-start justify-between space-y-0 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -83,7 +71,7 @@ export default function ItemCard({ item }: ItemCardProps) {
               </CardTitle>
 
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Shared by{" "}
+                Owned by{" "}
                 <span className="font-semibold text-foreground">
                   {ownerName}
                 </span>
@@ -108,6 +96,7 @@ export default function ItemCard({ item }: ItemCardProps) {
           </Badge>
         </CardHeader>
 
+        {/* CONTENT */}
         <CardContent className="flex flex-1 flex-col px-4 pb-3 pt-1">
           {hasTags && (
             <div className="mt-1 flex flex-wrap gap-1.5">
@@ -123,51 +112,26 @@ export default function ItemCard({ item }: ItemCardProps) {
             </div>
           )}
 
-          <div className="mt-auto flex gap-2 pt-3">
-            <Button
-              type="button"
-              size="sm"
-              className="h-8 flex-1 rounded-full text-[11px] font-medium"
-              onClick={() => setRequestOpen(true)}
-            >
-              Request item
-            </Button>
-
-
-            {/* Contact modal */}
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-8 flex-1 rounded-full text-[11px] font-medium"
-              onClick={() => setContactOpen(true)}
-            >
-              Contact info
-            </Button>
-
-            <ContactInfoDialog
-              ownerId={item.owner_id}
-              open={contactOpen}
-              onOpenChange={setContactOpen}
-            />
+          {/* Можно добавить доп. инфу, например created_at, если захочешь */}
+          <div className="mt-auto pt-3 text-[11px] text-muted-foreground">
+            {item.created_at && (
+              <span>
+                Added{" "}
+                <span className="text-foreground">
+                  {new Date(item.created_at).toLocaleDateString()}
+                </span>
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Details modal */}
+      {/* Details modal — переиспользуем существующий */}
       <ItemDetailsDialog
         item={item}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
       />
-
-      {/* Request modal */}
-      <RequestItemDialog
-        item={item}
-        open={requestOpen}
-        onOpenChange={setRequestOpen}
-      />
-
     </>
   );
 }
