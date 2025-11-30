@@ -68,8 +68,12 @@ export default function SidebarDrawer({
                   navigate("/landed");
                 }
 
+                if (s === "Borrowed") {
+                  // маршрут: <Route path="borrowed" element={<BorrowedPage />} />
+                  navigate("/borrowed");
+                }
+
                 // если захочешь позже:
-                // if (s === "Borrowed") navigate("/borrowed");
                 // if (s === "Inbox") navigate("/inbox");
               }}
             >

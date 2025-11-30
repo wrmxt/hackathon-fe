@@ -13,6 +13,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import MyThingsPage from "@/pages/MyThings.tsx";
 import NeighborsPage from "@/pages/NeighborsPage.tsx";
 import LendedPage from "@/pages/LendedPage.tsx";
+import BorrowedPage from "@/pages/BorrowedPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="mythings" element={<MyThingsPage/>}/>
               <Route path="neighbors" element={<NeighborsPage/>}/>
               <Route path="landed" element={<LendedPage/>}/>
+              <Route path="borrowed" element={<BorrowedPage/>}/>
             </Route>
 
             <Route path="about" element={<AboutPage />} />
