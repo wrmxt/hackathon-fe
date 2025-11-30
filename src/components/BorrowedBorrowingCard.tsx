@@ -9,6 +9,17 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import Button from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { useRequestReturn } from "@/api/returnBorrowing";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // что приходит из /api/borrowings
 export interface Borrowing {
@@ -37,11 +48,13 @@ export interface BorrowedBorrowingCardProps {
 
 // красивый статус (простое Title Case без переименований)
 function formatBorrowingStatus(raw: string): string {
+  const s = (raw || "").toLowerCase();
+  if (s === "return_requested") return "Waiting";
   if (!raw) return "";
   return raw
     .replace(/_/g, " ")
     .split(" ")
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
     .join(" ");
 }
 
@@ -49,6 +62,7 @@ function getBorrowingStatusVariant(
   status: string,
 ): "default" | "secondary" | "outline" {
   const s = status.toLowerCase();
+  if (s === "return_requested") return "secondary";
   if (s.includes("rejected") || s.includes("cancel")) {
     return "outline";
   }
@@ -67,10 +81,29 @@ export default function BorrowedBorrowingCard({
   const description = item?.description || "No description available.";
   const iconAria = `${title} borrowed item card`;
 
+  const { user } = useAuth();
+  const userId = user ?? "";
+  const [returnOpen, setReturnOpen] = useState(false);
+  const [fireReturn, setFireReturn] = useState(false);
+  const [localStatus, setLocalStatus] = useState<string | null>(null);
+  const reqReturnQ = useRequestReturn(fireReturn ? borrowing.id : "", userId);
+  const effectiveStatus = localStatus ?? borrowing.status;
+  const canRequestReturn = (effectiveStatus || "").toLowerCase() === "active";
+  const alreadyRequested =
+    (effectiveStatus || "").toLowerCase() === "return_requested" ||
+    reqReturnQ.isSuccess;
+
+  useEffect(() => {
+    if (reqReturnQ.isSuccess) {
+      const id = requestAnimationFrame(() => setLocalStatus("return_requested"));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [reqReturnQ.isSuccess]);
+
   return (
-    <Card className="flex h-full w-full max-w-xs flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
+    <Card className="flex h-full w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
       {/* HEADER */}
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 px-4 py-3">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 px-5 py-3">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <Package aria-label={iconAria} className="size-5" />
@@ -91,16 +124,16 @@ export default function BorrowedBorrowingCard({
         </div>
 
         <Badge
-          variant={getBorrowingStatusVariant(borrowing.status)}
+          variant={getBorrowingStatusVariant(effectiveStatus)}
           className="px-2 py-0 text-[11px]"
         >
-          {formatBorrowingStatus(borrowing.status)}
+          {formatBorrowingStatus(effectiveStatus)}
         </Badge>
       </CardHeader>
 
       {/* CONTENT */}
-      <CardContent className="flex flex-1 flex-col px-4 pb-3 pt-1">
-        <p className="text-sm text-muted-foreground line-clamp-3">
+      <CardContent className="flex flex-1 flex-col px-5 pb-3 pt-1">
+        <p className="text-sm text-muted-foreground line-clamp-3 break-words">
           {description}
         </p>
 
@@ -127,6 +160,85 @@ export default function BorrowedBorrowingCard({
           </CardFooter>
         </div>
       </CardContent>
+
+      <CardFooter className="mt-0 px-5 pb-4">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="h-8 w-full text-[11px]"
+          onClick={() => setReturnOpen(true)}
+          disabled={!canRequestReturn || alreadyRequested || reqReturnQ.isLoading}
+        >
+          {alreadyRequested
+            ? "Return requested"
+            : reqReturnQ.isLoading
+            ? "Sending..."
+            : "Return"}
+        </Button>
+      </CardFooter>
+
+      {/* Return confirm modal */}
+      <Dialog
+        open={returnOpen}
+        onOpenChange={(o) => {
+          if (!reqReturnQ.isLoading) setReturnOpen(o);
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold">
+              Return “{title}”
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              You’re about to request a return from the owner. Confirm to proceed.
+            </DialogDescription>
+          </DialogHeader>
+
+          {reqReturnQ.isError && (
+            <div className="text-xs text-destructive">
+              Failed to send return request. Please try again.
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              onClick={() => setReturnOpen(false)}
+              disabled={reqReturnQ.isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              onClick={() => {
+                if (
+                  !userId ||
+                  reqReturnQ.isLoading ||
+                  alreadyRequested ||
+                  !canRequestReturn
+                )
+                  return;
+                setFireReturn(true);
+                setReturnOpen(false);
+              }}
+              disabled={
+                reqReturnQ.isLoading ||
+                alreadyRequested ||
+                !userId ||
+                !canRequestReturn
+              }
+            >
+              {reqReturnQ.isLoading ? "Sending..." : "Confirm"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
