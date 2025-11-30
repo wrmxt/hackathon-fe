@@ -9,6 +9,8 @@ import {
   DrawerFooter,
   DrawerClose,
 } from "@/components/ui/drawer";
+import { useAuth } from "@/context/AuthContext";
+import { usePending } from "@/api/borrowings";
 
 type Section = "Neighbors" | "My Things" | "Borrowed" | "Lended" | "Inbox";
 
@@ -20,6 +22,15 @@ export default function SidebarDrawer({
   onSelect: (s: Section) => void;
 }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const pendingQuery = usePending(user || "");
+  const pendingData = pendingQuery.data as unknown;
+  const pendingCount = (() => {
+    if (!pendingData) return 0;
+    if (Array.isArray(pendingData)) return pendingData.length;
+    const items = (pendingData as any)?.items ?? (pendingData as any)?.data ?? [];
+    return Array.isArray(items) ? items.length : 0;
+  })();
   const sections: Section[] = ["Neighbors", "My Things", "Borrowed", "Lended", "Inbox"];
 
   return (
@@ -78,7 +89,9 @@ export default function SidebarDrawer({
               }}
             >
               <span className="flex-1 text-left">{s}</span>
-              {s === "Inbox" && <Badge variant="default">3</Badge>}
+              {s === "Inbox" && (
+                <Badge variant="default">{pendingCount}</Badge>
+              )}
             </Button>
           );
         })}

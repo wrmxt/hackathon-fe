@@ -12,6 +12,7 @@ export type NavItem = "chat" | "dashboard" | "about";
 export interface TopBarProps {
   activeItem: NavItem;
   onChange: (item: NavItem) => void;
+  dimmed?: boolean;
 }
 
 const navItems: { key: NavItem; label: string }[] = [
@@ -20,7 +21,11 @@ const navItems: { key: NavItem; label: string }[] = [
   { key: "about", label: "About Us" },
 ];
 
-export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
+export const TopBar: React.FC<TopBarProps> = ({
+  activeItem,
+  onChange,
+  dimmed = false,
+}) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -30,7 +35,11 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
   }, [theme, setTheme]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-border/40 bg-background/50 backdrop-blur-md shadow-sm">
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-40 border-b border-border/40 bg-background/50 backdrop-blur-md shadow-sm"
+      )}
+    >
       <div className="relative mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-4">
         {/* Logo / App name */}
         <div className="flex items-center gap-3">
@@ -50,7 +59,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeItem, onChange }) => {
         {/* Center nav */}
         <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-md bg-background/40 backdrop-blur-sm p-1 text-xs sm:text-sm shadow-xs">
           {navItems.map(({ key, label }) => {
-            const isActive = key === activeItem;
+            const isActive = !dimmed && key === activeItem; // when dimmed, nothing is active
             return (
               <Button
                 key={key}

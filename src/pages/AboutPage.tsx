@@ -135,6 +135,25 @@ function TeamMemberCard({
 }
 
 export default function AboutPage() {
+  const missionRef = React.useRef<HTMLDivElement | null>(null);
+  const teamRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollWithOffset = React.useCallback((el: HTMLElement | null) => {
+    if (!el) return;
+    const headerOffset = 88; // approx TopBar height (smaller screens 56-64, larger 64-88); adjust if needed
+    const rect = el.getBoundingClientRect();
+    const offsetTop = rect.top + window.scrollY - headerOffset;
+    window.scrollTo({ top: Math.max(offsetTop, 0), behavior: "smooth" });
+  }, []);
+
+  const scrollToMission = React.useCallback(() => {
+    scrollWithOffset(missionRef.current);
+  }, [scrollWithOffset]);
+
+  const scrollToTeam = React.useCallback(() => {
+    scrollWithOffset(teamRef.current);
+  }, [scrollWithOffset]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-100 to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">{/* reverted richer gradient */}
       <section className="relative h-screen w-full overflow-hidden border-b border-border/60">
@@ -160,14 +179,14 @@ export default function AboutPage() {
           </div>
 
           <div className="mt-10 flex flex-wrap gap-4">
-            <Button variant="default" className="bg-white text-black hover:bg-white/90 shadow">Meet the team</Button>
-            <Button variant="outline" className="border-white/40 text-white bg-transparent hover:bg-transparent focus-visible:ring-white/40">Our mission</Button>
+            <Button variant="default" className="bg-white text-black hover:bg-white/90 shadow" onClick={scrollToTeam}>Meet the team</Button>
+            <Button variant="outline" className="border-white/40 text白 bg-transparent hover:bg-transparent focus-visible:ring-white/40" onClick={scrollToMission}>Our mission</Button>
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-5xl px-4 py-16 space-y-14">
-        <section>
+        <section ref={missionRef}>
           <Card className="bg-white/70 dark:bg-white/5 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Our mission</CardTitle>
@@ -196,16 +215,15 @@ export default function AboutPage() {
           </Card>
         </section>
 
-        <section className="space-y-10 border-t border-border/60 pt-12">
+        <section ref={teamRef} className="space-y-10 border-t border-border/60 pt-12">
           <div className="space-y-3">
             <h2 className="text-2xl font-bold tracking-tight">The team behind shAIring</h2>
             <p className="text-sm text-muted-foreground">We’re builders and neighbors who care about circular design and clean, simple UI.</p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-3">
-            <TeamMemberCard name="Alex" role="Frontend & UX" bio="Loves circular economy and clear interfaces." initials="AX" />
-            <TeamMemberCard name="Mia" role="Backend & Data" bio="Optimizes for impact and reliability." initials="MI" />
-            <TeamMemberCard name="Leo" role="Community" bio="Connects neighbors and hosts sharing events." initials="LE" />
+          <div className="grid gap-5 sm:grid-cols-2">{/* two people */}
+            <TeamMemberCard name="Lavreniuk Serhii" role="Frontend, Backend & AI" bio="Worked across frontend, backend and AI together." initials="LS" />
+            <TeamMemberCard name="Vladyslav Futrak" role="Frontend, Backend & AI" bio="Worked across frontend, backend and AI together." initials="VF" />
           </div>
 
           <div className="grid gap-5 sm:grid-cols-3">

@@ -28,7 +28,21 @@ export function AppLayout() {
       ? "about"
       : "dashboard"; // default for "/" and "/dashboard"
 
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  type Section = "Neighbors" | "My Things" | "Borrowed" | "Lended" | "Inbox";
+  const [activeSection, setActiveSection] = React.useState<Section>("Neighbors");
+  const [topbarDimmed, setTopbarDimmed] = React.useState(false);
+
+
+  const handleSection = (s: Section) => {
+    setActiveSection(s);
+    setSidebarOpen(false); // close on mobile
+    setTopbarDimmed(true); // dim topbar on sidebar interaction
+    if (s === "Inbox") navigate('/inbox');
+  };
+
   const handleChange = (item: NavItem) => {
+    setTopbarDimmed(false); // restore topbar when using top nav
     if (item === "dashboard") navigate("/");
     else if (item === "chat") navigate("/chat");
     else if (item === "about") navigate("/about");
@@ -37,23 +51,13 @@ export function AppLayout() {
   const isAbout = location.pathname === "/about";
 
   // Sidebar state and active section local to layout
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  type Section = "Neighbors" | "My Things" | "Borrowed" | "Lended" | "Inbox";
-  const [activeSection, setActiveSection] = React.useState<Section>("Neighbors");
-
-
-  const handleSection = (s: Section) => {
-    setActiveSection(s);
-    setSidebarOpen(false); // close on mobile
-    if (s === "Inbox") navigate('/inbox');
-  };
 
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-background">
           <Drawer open={sidebarOpen} onOpenChange={(v) => setSidebarOpen(v)}>
-            <TopBar activeItem={activeItem} onChange={handleChange} />
+            <TopBar activeItem={activeItem} onChange={handleChange} dimmed={topbarDimmed} />
 
             <main className={isAbout ? "pt-0 pb-10" : "mx-auto max-w-6xl px-4 pt-6 pb-10"}>
               <div className="flex w-full gap-6">
