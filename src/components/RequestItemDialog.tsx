@@ -7,7 +7,9 @@ import {
 } from "@/components/ui/dialog.tsx";
 import Button from "@/components/ui/button.tsx";
 import type { Item } from "@/components/ItemCard.tsx"; // путь поправь, если другой
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRequestBorrowing } from "@/api/requestBorrowing";
 
 interface RequestItemDialogProps {
   item: Item;
@@ -25,7 +27,25 @@ export function RequestItemDialog({
   onRequested,
 }: RequestItemDialogProps) {
   const ownerName = item.owner_id.charAt(0).toUpperCase() + item.owner_id.slice(1);
-  const [message, setMessage] = useState("");
+
+  const { user } = useAuth();
+  const userId = user ?? "";
+
+  // trigger request when user submits
+  const [shouldRequest, setShouldRequest] = useState(false);
+  const reqQ = useRequestBorrowing(userId, shouldRequest ? item.id : "");
+
+  useEffect(() => {
+    if (!shouldRequest) return;
+    if (reqQ.isSuccess) {
+      onRequested?.(item.id);
+      onOpenChange(false);
+      setShouldRequest(false);
+    }
+  }, [reqQ.isSuccess, shouldRequest, onRequested, onOpenChange, item.id]);
+
+  const loading = shouldRequest && reqQ.isLoading;
+  const error = shouldRequest && reqQ.isError;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -35,29 +55,16 @@ export function RequestItemDialog({
             Request “{item.name}”
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Send a short note to {ownerName} to reserve this item.
+            You’re about to send a borrowing request to {ownerName}. Confirm to proceed.
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          className="mt-3 space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onRequested?.(item.id);
-            onOpenChange(false);
-          }}
-        >
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">
-              Message to owner
-            </label>
-            <textarea
-              className="h-20 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-primary"
-              placeholder="Hi, could I borrow this item tomorrow evening?"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-          </div>
+        <div className="mt-3 space-y-3">
+          {error && (
+            <div className="text-xs text-destructive">
+              Failed to send request. Please try again.
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button
@@ -65,15 +72,28 @@ export function RequestItemDialog({
               variant="outline"
               size="sm"
               className="h-8 px-3 text-xs"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                setShouldRequest(false);
+                onOpenChange(false);
+              }}
+              disabled={loading}
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="h-8 px-3 text-xs" disabled={alreadyRequested}>
-              {alreadyRequested ? "Requested" : "Send request"}
+            <Button
+              type="button"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              onClick={() => {
+                if (alreadyRequested || !userId) return;
+                setShouldRequest(true);
+              }}
+              disabled={alreadyRequested || loading || !userId}
+            >
+              {alreadyRequested ? "Requested" : loading ? "Sending..." : "Confirm"}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

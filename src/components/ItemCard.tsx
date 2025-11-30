@@ -54,13 +54,15 @@ function getStatusVariant(status: Item["status"]) {
 
 export interface ItemCardProps {
   item: Item;
+  requestedByMe?: boolean;
+  requestedByOthers?: boolean;
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
+export default function ItemCard({ item, requestedByMe, requestedByOthers }: ItemCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
-  const [requested, setRequested] = useState(false); // local state again
+  const [requested, setRequested] = useState(false); // local fallback
 
   const ownerName = capitalize(item.owner_id);
   const hasTags = Array.isArray(item.tags) && item.tags.length > 0;
@@ -118,9 +120,13 @@ export default function ItemCard({ item }: ItemCardProps) {
               size="sm"
               className="h-8 flex-1 rounded-full text-[11px] font-medium disabled:opacity-60"
               onClick={() => setRequestOpen(true)}
-              disabled={requested || item.status !== "available"}
+              disabled={requested || requestedByMe || requestedByOthers || item.status !== "available"}
             >
-              {requested ? "Requested" : "Request item"}
+              {requested || requestedByMe
+                ? "Requested by you"
+                : requestedByOthers
+                ? "Requested by someone"
+                : "Request item"}
             </Button>
 
             <Button
@@ -144,7 +150,7 @@ export default function ItemCard({ item }: ItemCardProps) {
         item={item}
         open={requestOpen}
         onOpenChange={setRequestOpen}
-        alreadyRequested={requested}
+        alreadyRequested={requested || requestedByMe || requestedByOthers}
         onRequested={() => setRequested(true)}
       />
     </>

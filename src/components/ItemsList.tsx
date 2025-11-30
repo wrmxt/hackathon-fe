@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { useItems } from "@/api/api";
 import ItemCard, { type Item } from "@/components/ItemCard";
 import Button from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { usePending } from "@/api/borrowings";
 
 export interface ItemsListProps {
   title?: string;      // сейчас не используем в UI, но оставляем проп
@@ -27,6 +29,27 @@ export function ItemsList({ items: overrideItems }: ItemsListProps) {
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const { user } = useAuth();
+  const userId = user ?? "";
+  const pendingQ = usePending(userId);
+  const pending = pendingQ.data as { as_lender?: { item_id: string; status: string }[]; as_borrower?: { item_id: string; status: string }[] } | undefined;
+
+  const requestedByMeSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const b of pending?.as_borrower ?? []) {
+      if (b.status?.includes("waiting")) set.add(b.item_id);
+    }
+    return set;
+  }, [pending]);
+
+  const requestedByOthersSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const b of pending?.as_lender ?? []) {
+      if (b.status?.includes("waiting")) set.add(b.item_id);
+    }
+    return set;
+  }, [pending]);
 
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -125,7 +148,12 @@ export function ItemsList({ items: overrideItems }: ItemsListProps) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredItems.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard
+              key={item.id}
+              item={item}
+              requestedByMe={requestedByMeSet.has(item.id)}
+              requestedByOthers={requestedByOthersSet.has(item.id)}
+            />
           ))}
         </div>
       )}
